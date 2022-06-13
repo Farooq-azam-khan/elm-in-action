@@ -52,9 +52,6 @@ sizeToString size =
       Small -> "small"
       Medium -> "medium"
       Large -> "large"
-photoListUrl : String 
-photoListUrl = 
-  "http://elm-in-action.com/list-photos"
 
 view : Model -> Html Msg 
 view model = 
@@ -65,7 +62,7 @@ view model =
             [ text "Surprise Me!" ]
     , h3 [] [ text "Thumbnail Size:" ]
     , div [ id "choose-size" ] 
-          (List.map viewSizeChooser [Small, Medium, Large ])
+          (List.map viewSizeChooser [Small, Medium, Large])
     , div [ id "thumbnails", class (sizeToString model.chooseSize) ]
           (List.map
                 (viewThumbnail model.selectedUrl)
