@@ -16,7 +16,8 @@ type alias Model =
 type Msg
   = ClickedPhoto String
   | ClickedSize ThumbnailSize
-  | ClickedSurpriseMe -- { description : String, data : String, size : ThumbnailSize } 
+  | ClickedSurpriseMe 
+  | GotSelectedIndex Int 
 
 type ThumbnailSize 
   = Small
@@ -43,7 +44,7 @@ getPhotoUrl index =
         "" 
 randomPhotoPicker : Random.Generator Int 
 randomPhotoPicker = 
-    Random.int 0 2 
+    Random.int 0 (Array.length photoArray - 1)
 
 sizeToString : ThumbnailSize -> String 
 sizeToString size = 
@@ -88,7 +89,7 @@ viewThumbnail selectedUrl thumb =
       [
       ] 
 
-initModel : Model  
+initModel : Model
 initModel = 
   { photos = [ { url = "1.jpeg" }
         , { url = "2.jpeg" } 
@@ -102,18 +103,23 @@ photoArray : Array Photo
 photoArray = 
   Array.fromList initModel.photos
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
     case msg of 
       ClickedPhoto url -> 
-        { model | selectedUrl = url } 
+        ({ model | selectedUrl = url }, Cmd.none)
       ClickedSurpriseMe -> 
-        { model | selectedUrl = "2.jpeg" }
+        ({ model | selectedUrl = "2.jpeg" }, Random.generate GotSelectedIndex randomPhotoPicker)
       ClickedSize size ->  
-        { model | chooseSize = size } 
+        ({ model | chooseSize = size }, Cmd.none)
+      GotSelectedIndex index -> 
+          ({model | selectedUrl = getPhotoUrl index }, Cmd.none)
+
+main : Program () Model Msg
 main = 
-  Browser.sandbox 
-    { init = initModel 
+  Browser.element
+    { init = \flags -> (initModel, Cmd.none)
     , view = view
     , update = update 
+    , subscriptions = \model -> Sub.none
     }
