@@ -8,6 +8,10 @@ import Html.Events exposing (onClick)
 urlPrefix = 
   "http://elm-in-action.com/"
 
+photoListUrl : String 
+photoListUrl = 
+  "http://elm-in-action.com/list-photos"
+
 view model = 
   div
     [ class "content" ]
@@ -34,7 +38,7 @@ viewThumbnail selectedUrl thumb =
       [
       ] 
 
-
+initModel : {photos: List {url : String}, selectedUrl:String}
 initModel = 
   { photos = [ { url = "1.jpeg" }
         , { url = "2.jpeg" } 
@@ -43,6 +47,7 @@ initModel =
   , selectedUrl = "1.jpeg"
   }
 
+update : {description:String, data:String} -> {photos: List {url: String}, selectedUrl:String} -> {photos:List {url:String}, selectedUrl:String}
 update msg model = 
     if msg.description == "ClickedPhoto" then 
         { model | selectedUrl = msg.data } 
