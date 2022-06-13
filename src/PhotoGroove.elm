@@ -2,13 +2,22 @@ module PhotoGroove exposing (main)
 
 import Array exposing (Array)
 import Browser
-import Html exposing (Html, div, h1, img, text)
+import Html exposing (Html, div, h1, img, text, button)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 
 type alias Photo = { url : String } 
-type alias Model = {photos: List Photo, selectedUrl:String} 
+type alias Model = 
+    { photos: List Photo
+    , selectedUrl:String
+    , chooseSize : ThumbnailSize 
+    }
 type alias Msg = { description : String, data : String }
+
+type ThumbnailSize 
+  = Small
+  | Medium
+  | Large 
 
 urlPrefix : String  
 urlPrefix = 
@@ -23,6 +32,8 @@ view model =
   div
     [ class "content" ]
     [ h1 [] [ text "Photo Groove" ]
+    , button [ onClick { description = "ClickedSurpriseMe", data = "" } ]
+            [ text "Surprise Me!" ]
     , div [ id "thumbnails" ] 
           (List.map
                 (viewThumbnail model.selectedUrl)
@@ -36,6 +47,7 @@ view model =
         ]
     ]
 
+viewThumbnail : String -> Photo -> Html Msg 
 viewThumbnail selectedUrl thumb = 
     img 
       [ src (urlPrefix ++ thumb.url) 
@@ -45,13 +57,14 @@ viewThumbnail selectedUrl thumb =
       [
       ] 
 
-initModel : {photos: List {url : String}, selectedUrl:String}
+initModel : Model  
 initModel = 
   { photos = [ { url = "1.jpeg" }
         , { url = "2.jpeg" } 
         , { url = "3.jpeg" }
         ] 
   , selectedUrl = "1.jpeg"
+  , chooseSize = Medium
   }
 
 photoArray : Array Photo  
@@ -60,9 +73,12 @@ photoArray =
 
 update : Msg -> Model -> Model
 update msg model = 
-    if msg.description == "ClickedPhoto" then 
+    case msg.description of 
+      "ClickedPhoto" -> 
         { model | selectedUrl = msg.data } 
-    else 
+      "ClickedSurpriseMe" -> 
+        { model | selectedUrl = "2.jpeg" }
+      _ ->  
         model 
 main = 
   Browser.sandbox 
