@@ -1,3 +1,4 @@
+all: format build 
 format: 
 	elm-format . --yes 
 build: 
