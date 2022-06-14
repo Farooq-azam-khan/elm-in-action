@@ -181,7 +181,7 @@ initialCmd : Cmd Msg
 initialCmd =
     Http.get
         { url = "http://elm-in-action.com/photos/list"
-        , expect = Http.expectString (\result -> GotPhotos result)
+        , expect = Http.expectString GotPhotos
         }
 
 
