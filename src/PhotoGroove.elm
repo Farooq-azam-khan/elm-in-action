@@ -6,11 +6,32 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
+import Json.Decode exposing (Decoder, field, int, map3, string, succeed)
+import Json.Decode.Pipeline as JDP exposing (optional)
 import Random
 
 
 type alias Photo =
-    { url : String }
+    { url : String, size : Int, title : String }
+
+
+photoDecoder : Decoder Photo
+photoDecoder =
+    succeed Photo
+        |> JDP.required "url" string
+        |> JDP.required "size" int
+        |> optional "title" string "(untitle)"
+
+
+
+{-
+   photoDecoder : Decoder Photo
+   photoDecoder =
+       map3 (\url size title -> { url = url, size = size, title = title })
+           (field "url" string)
+           (field "size" int)
+           (field "title" string)
+-}
 
 
 type Status
