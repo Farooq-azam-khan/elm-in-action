@@ -144,11 +144,6 @@ update msg model =
                         |> Random.generate GotRandomPhoto
                         |> Tuple.pair
 
-                {- ( model
-                   , Random.generate GotRandomPhoto
-                       (Random.uniform firstPhoto otherPhotos)
-                       )
-                -}
                 Loaded [] _ ->
                     ( model, Cmd.none )
 
