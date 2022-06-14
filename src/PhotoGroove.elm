@@ -161,24 +161,28 @@ update msg model =
         GotRandomPhoto photo ->
             ( { model | status = selectUrl photo.url model.status }, Cmd.none )
 
-        GotPhotos result ->
-            case result of
-                Ok responseStr ->
-                    case String.split "," responseStr of
-                        (firstUrl :: _) as urls ->
-                            let
-                                photos =
-                                    List.map Photo urls
+        GotPhotos (Ok responseStr) ->
+            case String.split "," responseStr of
+                (firstUrl :: _) as urls ->
+                    let
+                        photos =
+                            List.map Photo urls
+                    in
+                    ( { model | status = Loaded photos firstUrl }, Cmd.none )
 
-                                -- List.map (\url -> { url = url }) urls
-                            in
-                            ( { model | status = Loaded photos firstUrl }, Cmd.none )
+                [] ->
+                    ( { model | status = Errored "0 photos found" }, Cmd.none )
 
-                        [] ->
-                            ( { model | status = Errored "0 photos found" }, Cmd.none )
+        GotPhotos (Err httperror) ->
+            ( { model | status = Errored "server error" }, Cmd.none )
 
-                Err httperror ->
-                    ( { model | status = Errored "server error" }, Cmd.none )
+
+initialCmd : Cmd Msg
+initialCmd =
+    Http.get
+        { url = "http://elm-in-action.com/photos/list"
+        , expect = Http.expectString (\result -> GotPhotos result)
+        }
 
 
 main : Program () Model Msg
