@@ -211,7 +211,7 @@ applyFilters model =
                 url =
                     urlPrefix ++ "large/" ++ selectedUrl
             in
-            ( model, Cmd.none )
+            ( model, setFilters { url = url, filters = filters } )
 
         Loading ->
             ( model, Cmd.none )
