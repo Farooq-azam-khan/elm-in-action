@@ -1,4 +1,4 @@
-module PhotoGroove exposing (main)
+port module PhotoGroove exposing (main)
 
 import Array exposing (Array)
 import Browser
@@ -10,6 +10,15 @@ import Json.Decode as JD exposing (Decoder, at, field, int, map3, string, succee
 import Json.Decode.Pipeline as JDP exposing (optional)
 import Json.Encode as JE
 import Random
+
+
+port setFilters : FilterOptions -> Cmd msg
+
+
+type alias FilterOptions =
+    { url : String
+    , filters : List { name : String, amount : Int }
+    }
 
 
 type alias Photo =
@@ -142,11 +151,14 @@ viewLoaded photos selectedUrl model =
             (viewThumbnail selectedUrl)
             photos
         )
-    , img
-        [ class "large"
-        , src (urlPrefix ++ "large/" ++ selectedUrl)
-        ]
-        []
+    , canvas [ id "main-canvas", class "large" ] []
+
+    {- img
+       [ class "large"
+       , src (urlPrefix ++ "large/" ++ selectedUrl)
+       ]
+       []
+    -}
     ]
 
 
@@ -185,11 +197,34 @@ selectUrl url status =
             status
 
 
+applyFilters : Model -> ( Model, Cmd Msg )
+applyFilters model =
+    case model.status of
+        Loaded photos selectedUrl ->
+            let
+                filters =
+                    [ { name = "Hue", amount = model.hue }
+                    , { name = "ripple", amount = model.ripple }
+                    , { name = "noise", amount = model.noise }
+                    ]
+
+                url =
+                    urlPrefix ++ "large/" ++ selectedUrl
+            in
+            ( model, Cmd.none )
+
+        Loading ->
+            ( model, Cmd.none )
+
+        Errored _ ->
+            ( model, Cmd.none )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ClickedPhoto url ->
-            ( { model | status = selectUrl url model.status }, Cmd.none )
+        ClickedPhoto selectedUrl ->
+            applyFilters { model | status = selectUrl selectedUrl model.status }
 
         ClickedSurpriseMe ->
             case model.status of
@@ -211,7 +246,7 @@ update msg model =
             ( { model | chooseSize = size }, Cmd.none )
 
         GotRandomPhoto photo ->
-            ( { model | status = selectUrl photo.url model.status }, Cmd.none )
+            applyFilters { model | status = selectUrl photo.url model.status }
 
         GotPhotos (Ok photos) ->
             case photos of
