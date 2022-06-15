@@ -17,7 +17,7 @@ port setFilters : FilterOptions -> Cmd msg
 
 type alias FilterOptions =
     { url : String
-    , filters : List { name : String, amount : Int }
+    , filters : List { name : String, amount : Float }
     }
 
 
@@ -203,9 +203,9 @@ applyFilters model =
         Loaded photos selectedUrl ->
             let
                 filters =
-                    [ { name = "Hue", amount = model.hue }
-                    , { name = "ripple", amount = model.ripple }
-                    , { name = "noise", amount = model.noise }
+                    [ { name = "Hue", amount = toFloat model.hue / 11 }
+                    , { name = "ripple", amount = toFloat model.ripple / 11 }
+                    , { name = "noise", amount = toFloat model.noise / 11 }
                     ]
 
                 url =
@@ -251,7 +251,7 @@ update msg model =
         GotPhotos (Ok photos) ->
             case photos of
                 first :: rest ->
-                    ( { model | status = Loaded photos first.url }, Cmd.none )
+                    applyFilters { model | status = Loaded photos first.url }
 
                 [] ->
                     ( { model | status = Errored "0 photos found" }, Cmd.none )
@@ -260,13 +260,13 @@ update msg model =
             ( { model | status = Errored "server error" }, Cmd.none )
 
         SlidHue hue ->
-            ( { model | hue = hue }, Cmd.none )
+            applyFilters { model | hue = hue }
 
         SlidNoise noise ->
-            ( { model | noise = noise }, Cmd.none )
+            applyFilters { model | noise = noise }
 
         SlidRipple ripple ->
-            ( { model | ripple = ripple }, Cmd.none )
+            applyFilters { model | ripple = ripple }
 
 
 initialCmd : Cmd Msg

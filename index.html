@@ -49,7 +49,9 @@
         var app = Elm.PhotoGroove.init({node: document.getElementById("app")}); 
       console.log({app})
         app.ports.setFilters.subscribe( function (options) {
-              Pasta.apply(document.getElementById('main-canvas'), options)
+               requestAnimationFrame (function () {
+                  Pasta.apply(document.getElementById('main-canvas'), options)
+              })
         })
     </script>
   </body>
