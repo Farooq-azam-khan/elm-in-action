@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" href="http://elm-in-action.com/styles.css">
+    <link rel="stylesheet" href="http://elm-in-action.com/range-slider.css">
+    <script src="http://elm-in-action.com/range-slider.js"></script>
     <style>
       body { background-color: rgb(44, 44, 44); color: white; }
       img { border: 1px solid white; margin: 5px; }
@@ -15,10 +18,25 @@
     </style>
     <script>
       class RangeSlider extends HTMLElement {
-              connectedCallback() {
-                      let input = document.createElement('input');
-                      this.appendChild(input);
-              }
+        connectedCallback() {
+
+          const input = document.createElement('input');
+          this.appendChild(input);
+          const jsr = new JSR(input, {
+              max: this.max, 
+              values: [this.val], 
+              sliders: 1, 
+              grid: false
+          }) 
+
+          const rangeSliderNode = this; 
+          jsr.addEventListener('update', function (elem, value) {
+            const event = new CustomEvent('slide', {
+                detail: {userSlidTo: value}
+            })
+          })
+          rangeSliderNode.dispatchEvent(event)
+        }
       }
       window.customElements.define('range-slider', RangeSlider); 
     </script>

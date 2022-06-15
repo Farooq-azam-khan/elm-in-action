@@ -4,9 +4,9 @@ import Array exposing (Array)
 import Browser
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
-import Html.Events exposing (onClick)
+import Html.Events exposing (on, onClick)
 import Http
-import Json.Decode as JD exposing (Decoder, field, int, map3, string, succeed)
+import Json.Decode as JD exposing (Decoder, at, field, int, map3, string, succeed)
 import Json.Decode.Pipeline as JDP exposing (optional)
 import Json.Encode as JE
 import Random
@@ -14,6 +14,21 @@ import Random
 
 type alias Photo =
     { url : String, size : Int, title : String }
+
+
+onSlide : (Int -> msg) -> Attribute msg
+onSlide toMsg =
+    let
+        detailUserSlidTo : Decoder Int
+        detailUserSlidTo =
+            at [ "detail", "userSlidTo" ] int
+
+        msgDecoder : Decoder msg
+        msgDecoder =
+            JD.map toMsg detailUserSlidTo
+    in
+    -- create custom event handler
+    on "slide" msgDecoder
 
 
 rangeSlider : List (Attribute msg) -> List (Html msg) -> Html msg
