@@ -57,6 +57,7 @@ type alias Model =
     , hue : Int
     , ripple : Int
     , noise : Int
+    , activity : String
     }
 
 
@@ -64,6 +65,7 @@ type Msg
     = ClickedPhoto String
     | ClickedSize ThumbnailSize
     | ClickedSurpriseMe
+    | GotActivity String
     | GotRandomPhoto Photo
     | GotPhotos (Result Http.Error (List Photo))
     | SlidHue Int
@@ -138,6 +140,7 @@ viewLoaded photos selectedUrl model =
     [ h1 [] [ text "Photo Groove" ]
     , button [ onClick ClickedSurpriseMe ]
         [ text "Surprise Me!" ]
+    , div [ class "activity" ] [ text model.activity ]
     , div [ class "filters" ]
         [ viewFilter SlidHue "Hue" model.hue
         , viewFilter SlidRipple "Ripple" model.ripple
@@ -180,6 +183,7 @@ initModel =
     , hue = 5
     , ripple = 0
     , noise = 0
+    , activity = ""
     }
 
 
@@ -223,6 +227,9 @@ applyFilters model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        GotActivity activity ->
+            ( { model | activity = activity }, Cmd.none )
+
         ClickedPhoto selectedUrl ->
             applyFilters { model | status = selectUrl selectedUrl model.status }
 
