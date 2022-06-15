@@ -34,8 +34,8 @@
             const event = new CustomEvent('slide', {
                 detail: {userSlidTo: value}
             })
+            rangeSliderNode.dispatchEvent(event)
           })
-          rangeSliderNode.dispatchEvent(event)
         }
       }
       window.customElements.define('range-slider', RangeSlider); 

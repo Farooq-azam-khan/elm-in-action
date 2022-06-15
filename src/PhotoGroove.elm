@@ -18,25 +18,9 @@ type alias Photo =
 
 onSlide : (Int -> msg) -> Attribute msg
 onSlide toMsg =
-    at [ "detail", "userslidTo" ] int
+    at [ "detail", "userSlidTo" ] int
         |> JD.map toMsg
         |> on "slide"
-
-
-
-{- onSlide toMsg =
-   let
-       detailUserSlidTo : Decoder Int
-       detailUserSlidTo =
-           at [ "detail", "userSlidTo" ] int
-
-       msgDecoder : Decoder msg
-       msgDecoder =
-           JD.map toMsg detailUserSlidTo
-   in
-   -- create custom event handler
-   on "slide" msgDecoder
--}
 
 
 rangeSlider : List (Attribute msg) -> List (Html msg) -> Html msg
@@ -52,17 +36,6 @@ photoDecoder =
         |> optional "title" string "(untitle)"
 
 
-
-{-
-   photoDecoder : Decoder Photo
-   photoDecoder =
-       map3 (\url size title -> { url = url, size = size, title = title })
-           (field "url" string)
-           (field "size" int)
-           (field "title" string)
--}
-
-
 type Status
     = Loading
     | Loaded (List Photo) String
@@ -72,6 +45,9 @@ type Status
 type alias Model =
     { status : Status
     , chooseSize : ThumbnailSize
+    , hue : Int
+    , ripple : Int
+    , noise : Int
     }
 
 
@@ -81,6 +57,9 @@ type Msg
     | ClickedSurpriseMe
     | GotRandomPhoto Photo
     | GotPhotos (Result Http.Error (List Photo))
+    | SlidHue Int
+    | SlidNoise Int
+    | SlidRipple Int
 
 
 type ThumbnailSize
@@ -122,7 +101,7 @@ view model =
     <|
         case model.status of
             Loaded photos selectedUrl ->
-                viewLoaded photos selectedUrl model.chooseSize
+                viewLoaded photos selectedUrl model
 
             Loading ->
                 []
@@ -131,30 +110,34 @@ view model =
                 [ text ("Error: " ++ errorMessage) ]
 
 
-viewFilter : String -> Int -> Html Msg
-viewFilter name magnitude =
+viewFilter : (Int -> Msg) -> String -> Int -> Html Msg
+viewFilter toMsg name magnitude =
     div [ class "filter-slider" ]
         [ label [] [ text name ]
         , rangeSlider
             [ Attr.max "11"
             , Attr.property "val" (JE.int magnitude)
+            , onSlide toMsg
             ]
             []
         , label [] [ text (String.fromInt magnitude) ]
         ]
 
 
-viewLoaded : List Photo -> String -> ThumbnailSize -> List (Html Msg)
-viewLoaded photos selectedUrl chosenSize =
+viewLoaded : List Photo -> String -> Model -> List (Html Msg)
+viewLoaded photos selectedUrl model =
     [ h1 [] [ text "Photo Groove" ]
     , button [ onClick ClickedSurpriseMe ]
         [ text "Surprise Me!" ]
     , div [ class "filters" ]
-        [ viewFilter "Hue" 0, viewFilter "Ripple" 0, viewFilter "Noise" 0 ]
+        [ viewFilter SlidHue "Hue" model.hue
+        , viewFilter SlidRipple "Ripple" model.ripple
+        , viewFilter SlidNoise "Noise" model.noise
+        ]
     , h3 [] [ text "Thumbnail Size:" ]
     , div [ id "choose-size" ]
         (List.map viewSizeChooser [ Small, Medium, Large ])
-    , div [ id "thumbnails", class (sizeToString chosenSize) ]
+    , div [ id "thumbnails", class (sizeToString model.chooseSize) ]
         (List.map
             (viewThumbnail selectedUrl)
             photos
@@ -182,6 +165,9 @@ initModel : Model
 initModel =
     { status = Loading
     , chooseSize = Medium
+    , hue = 5
+    , ripple = 0
+    , noise = 0
     }
 
 
@@ -237,6 +223,15 @@ update msg model =
 
         GotPhotos (Err httperror) ->
             ( { model | status = Errored "server error" }, Cmd.none )
+
+        SlidHue hue ->
+            ( { model | hue = hue }, Cmd.none )
+
+        SlidNoise noise ->
+            ( { model | noise = noise }, Cmd.none )
+
+        SlidRipple ripple ->
+            ( { model | ripple = ripple }, Cmd.none )
 
 
 initialCmd : Cmd Msg
