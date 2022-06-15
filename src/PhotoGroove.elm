@@ -15,6 +15,9 @@ import Random
 port setFilters : FilterOptions -> Cmd msg
 
 
+port activityChanges : (String -> msg) -> Sub msg
+
+
 type alias FilterOptions =
     { url : String
     , filters : List { name : String, amount : Float }
@@ -284,11 +287,25 @@ initialCmd =
         }
 
 
-main : Program () Model Msg
+init : Float -> ( Model, Cmd Msg )
+init flags =
+    let
+        activity =
+            "Initializing Pasta v" ++ String.fromFloat flags
+    in
+    ( { initModel | activity = activity }, initialCmd )
+
+
+main : Program Float Model Msg
 main =
     Browser.element
-        { init = \_ -> ( initModel, initialCmd )
+        { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    activityChanges GotActivity
