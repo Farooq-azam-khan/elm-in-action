@@ -18,17 +18,25 @@ type alias Photo =
 
 onSlide : (Int -> msg) -> Attribute msg
 onSlide toMsg =
-    let
-        detailUserSlidTo : Decoder Int
-        detailUserSlidTo =
-            at [ "detail", "userSlidTo" ] int
+    at [ "detail", "userslidTo" ] int
+        |> JD.map toMsg
+        |> on "slide"
 
-        msgDecoder : Decoder msg
-        msgDecoder =
-            JD.map toMsg detailUserSlidTo
-    in
-    -- create custom event handler
-    on "slide" msgDecoder
+
+
+{- onSlide toMsg =
+   let
+       detailUserSlidTo : Decoder Int
+       detailUserSlidTo =
+           at [ "detail", "userSlidTo" ] int
+
+       msgDecoder : Decoder msg
+       msgDecoder =
+           JD.map toMsg detailUserSlidTo
+   in
+   -- create custom event handler
+   on "slide" msgDecoder
+-}
 
 
 rangeSlider : List (Attribute msg) -> List (Html msg) -> Html msg
