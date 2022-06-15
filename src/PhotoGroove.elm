@@ -3,16 +3,22 @@ module PhotoGroove exposing (main)
 import Array exposing (Array)
 import Browser
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as JD exposing (Decoder, field, int, map3, string, succeed)
 import Json.Decode.Pipeline as JDP exposing (optional)
+import Json.Encode as JE
 import Random
 
 
 type alias Photo =
     { url : String, size : Int, title : String }
+
+
+rangeSlider : List (Attribute msg) -> List (Html msg) -> Html msg
+rangeSlider attributes children =
+    node "range-slider" attributes children
 
 
 photoDecoder : Decoder Photo
@@ -102,11 +108,26 @@ view model =
                 [ text ("Error: " ++ errorMessage) ]
 
 
+viewFilter : String -> Int -> Html Msg
+viewFilter name magnitude =
+    div [ class "filter-slider" ]
+        [ label [] [ text name ]
+        , rangeSlider
+            [ Attr.max "11"
+            , Attr.property "val" (JE.int magnitude)
+            ]
+            []
+        , label [] [ text (String.fromInt magnitude) ]
+        ]
+
+
 viewLoaded : List Photo -> String -> ThumbnailSize -> List (Html Msg)
 viewLoaded photos selectedUrl chosenSize =
     [ h1 [] [ text "Photo Groove" ]
     , button [ onClick ClickedSurpriseMe ]
         [ text "Surprise Me!" ]
+    , div [ class "filters" ]
+        [ viewFilter "Hue" 0, viewFilter "Ripple" 0, viewFilter "Noise" 0 ]
     , h3 [] [ text "Thumbnail Size:" ]
     , div [ id "choose-size" ]
         (List.map viewSizeChooser [ Small, Medium, Large ])
