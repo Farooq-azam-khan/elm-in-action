@@ -2,6 +2,7 @@ module PhotoFolders exposing (main)
 
 import Browser
 import Browser.Events exposing (onClick)
+import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (class, src)
 import Http
@@ -51,17 +52,40 @@ viewRelatedPhoto url =
 
 
 view : Model -> Html Msg
-view modle =
+view model =
+    let
+        photoByUrl : String -> Maybe Photo
+        photoByUrl url =
+            Dict.get url model.photos
+
+        selectedPhoto : Html Msg
+        selectedPhoto =
+            case model.selectedPhotoUrl of
+                Just url ->
+                    case Dict.get url model.photos of
+                        Just photo ->
+                            viewSelectedPhoto photo
+
+                        Nothing ->
+                            text ""
+
+                Nothing ->
+                    text ""
+    in
     h1 [] [ text "The Grooviest Folders the world has ever seen" ]
 
 
 type alias Model =
-    { selectedPhotoUrl : Maybe String }
+    { selectedPhotoUrl : Maybe String
+    , photos : Dict String Photo
+    }
 
 
 initialModel : Model
 initialModel =
-    { selectedPhotoUrl = Nothing }
+    { selectedPhotoUrl = Nothing
+    , photos = Dict.empty
+    }
 
 
 init : () -> ( Model, Cmd Msg )
