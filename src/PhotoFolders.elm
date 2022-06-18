@@ -1,10 +1,10 @@
 module PhotoFolders exposing (main)
 
 import Browser
-import Browser.Events exposing (onClick)
 import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (class, src)
+import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
@@ -42,13 +42,20 @@ viewSelectedPhoto photo =
         , img [ src (urlPrefix ++ "photos/" ++ photo.url ++ "/full") ] []
         , span [] [ text (String.fromInt photo.size ++ "KB") ]
         , h3 [] [ text "Related" ]
-        , div [ class "related-photos" ] (List.map viewRelatedPhoto photo.relatedUrls)
+        , div
+            [ class "related-photos" ]
+            (List.map viewRelatedPhoto photo.relatedUrls)
         ]
 
 
 viewRelatedPhoto : String -> Html Msg
 viewRelatedPhoto url =
-    img [ class "related-photo", onClick (ClickedPhoto url), src (urlPrefix ++ "photos/" ++ url ++ "/thumb") ] []
+    img
+        [ class "related-photo"
+        , onClick (ClickedPhoto url)
+        , src (urlPrefix ++ "photos/" ++ url ++ "/thumb")
+        ]
+        []
 
 
 view : Model -> Html Msg
@@ -60,19 +67,16 @@ view model =
 
         selectedPhoto : Html Msg
         selectedPhoto =
-            case model.selectedPhotoUrl of
-                Just url ->
-                    case Dict.get url model.photos of
-                        Just photo ->
-                            viewSelectedPhoto photo
-
-                        Nothing ->
-                            text ""
+            case Maybe.andThen photoByUrl model.selectedPhotoUrl of
+                Just photo ->
+                    viewSelectedPhoto photo
 
                 Nothing ->
                     text ""
     in
-    h1 [] [ text "The Grooviest Folders the world has ever seen" ]
+    div [ class "content" ]
+        [ div [ class "selected-photo" ] [ selectedPhoto ]
+        ]
 
 
 type alias Model =
