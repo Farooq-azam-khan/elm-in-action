@@ -79,9 +79,28 @@ photoFromUrl url =
     { url = url, size = 0, title = "" }
 
 
+thumbnailsWork : Test
+thumbnailsWork =
+    fuzz (Fuzz.intRange 1 5) "URLs render as thumbnails" <|
+        \urlCount ->
+            let
+                urls : List String
+                urls =
+                    List.range 1 urlCount |> List.map (\num -> String.fromInt num ++ ".png")
+
+                thumbnailChecks : List (Query.Single msg -> Expectation)
+                thumbnailChecks =
+                    List.map thumbnailRendered urls
+            in
+            { initModel | status = Loaded (List.map photoFromUrl urls) "" }
+                |> view
+                |> Query.fromHtml
+                |> Expect.all thumbnailChecks
+
+
 clickThumbnail : Test
 clickThumbnail =
-    fuzz3 urlFuzzer string urlFuzzer "URLs render as thumbnails" <|
+    fuzz3 urlFuzzer string urlFuzzer "clicking a thumbnail selected it " <|
         \urlsBefore urlToSelect urlsAfter ->
             let
                 url =
