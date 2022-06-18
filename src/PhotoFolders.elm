@@ -6,9 +6,30 @@ import Html exposing (..)
 import Html.Attributes exposing (class, src)
 import Html.Events exposing (onClick)
 import Http
-import Json.Decode as Decode exposing (Decoder)
+import Json.Decode as Decode exposing (Decoder, int, list, string)
 import Json.Decode.Pipeline exposing (required)
 import PhotoGroove exposing (Msg(..))
+
+
+type alias Model =
+    { selectedPhotoUrl : Maybe String
+    , photos : Dict String Photo
+    , root : Folder
+    }
+
+
+type Msg
+    = ClickedPhoto String
+    | GotInitialModel (Result Http.Error Model)
+    | ClickedFolder FolderPath
+
+
+type alias Photo =
+    { title : String
+    , size : Int
+    , relatedUrls : List String
+    , url : String
+    }
 
 
 type FolderPath
@@ -58,14 +79,6 @@ main =
         }
 
 
-type alias Photo =
-    { title : String
-    , size : Int
-    , relatedUrls : List String
-    , url : String
-    }
-
-
 urlPrefix : String
 urlPrefix =
     "http://elm-in-action.com/"
@@ -95,6 +108,11 @@ viewRelatedPhoto url =
         []
 
 
+viewPhoto : String -> Html Msg
+viewPhoto url =
+    div [ class "photo", onClick (ClickedPhoto url) ] [ text url ]
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -118,13 +136,6 @@ view model =
             ]
         , div [ class "selected-photo" ] [ selectedPhoto ]
         ]
-
-
-type alias Model =
-    { selectedPhotoUrl : Maybe String
-    , photos : Dict String Photo
-    , root : Folder
-    }
 
 
 initialModel : Model
@@ -228,12 +239,6 @@ modelDecoder =
         }
 
 
-type Msg
-    = ClickedPhoto String
-    | GotInitialModel (Result Http.Error Model)
-    | ClickedFolder FolderPath
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -273,10 +278,51 @@ viewFolder path (Folder folder) =
     if folder.expanded then
         let
             contents =
-                List.indexedMap viewSubfolders folder.subfolders
+                List.append
+                    (List.indexedMap viewSubfolders folder.subfolders)
+                    (List.map viewPhoto folder.photoUrls)
         in
         div [ class "folder expanded" ]
             [ folderLabel, div [ class "contents" ] contents ]
 
     else
         div [ class "folder collapsed" ] [ folderLabel ]
+
+
+type alias JsonPhoto =
+    { title : String
+    , size : Int
+    , relatedUrls : List String
+    }
+
+
+jsonPhotoDecoder : Decoder JsonPhoto
+jsonPhotoDecoder =
+    Decode.succeed JsonPhoto
+        |> required "title" string
+        |> required "size" int
+        |> required "related_photos" (list string)
+
+
+finishPhoto : ( String, JsonPhoto ) -> ( String, Photo )
+finishPhoto ( url, json ) =
+    ( url
+    , { url = url
+      , size = json.size
+      , title = json.title
+      , relatedUrls = json.relatedUrls
+      }
+    )
+
+
+fromPairs : List ( String, JsonPhoto ) -> Dict String Photo
+fromPairs pairs =
+    pairs
+        |> List.map finishPhoto
+        |> Dict.fromList
+
+
+photosDecoder : Decoder (Dict String Photo)
+photosDecoder =
+    Decode.keyValuePairs jsonPhotoDecoder
+        |> Decode.map fromPairs
