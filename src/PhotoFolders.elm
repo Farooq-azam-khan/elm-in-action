@@ -114,7 +114,7 @@ view model =
     div [ class "content" ]
         [ div [ class "folder" ]
             [ h1 [] [ text "Folders" ]
-            , viewFolder model.root
+            , viewFolder End model.root
             ]
         , div [ class "selected-photo" ] [ selectedPhoto ]
         ]
@@ -134,6 +134,7 @@ initialModel =
     , root =
         Folder
             { name = "Loading..."
+            , expanded = False
             , photoUrls = []
             , subfolders = []
             }
@@ -249,7 +250,7 @@ update msg model =
             ( model, Cmd.none )
 
 
-appendIndex : Int -> folderPath -> FolderPath
+appendIndex : Int -> FolderPath -> FolderPath
 appendIndex index path =
     case path of
         End ->
