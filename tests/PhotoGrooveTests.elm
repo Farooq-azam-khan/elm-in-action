@@ -7,6 +7,7 @@ import Json.Decode as Decode exposing (decodeValue)
 import Json.Encode as Encode
 import PhotoGroove exposing (Model, Msg(..), Photo, Status(..), initModel, main, update, urlPrefix, view)
 import Test exposing (..)
+import Test.Html.Event as Event
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (attribute, tag, text)
 
@@ -78,22 +79,30 @@ photoFromUrl url =
     { url = url, size = 0, title = "" }
 
 
-thumbnailsWork : Test
-thumbnailsWork =
-    fuzz (Fuzz.intRange 1 5) "URLs render as thumbnails" <|
-        \urlCount ->
+clickThumbnail : Test
+clickThumbnail =
+    fuzz3 urlFuzzer string urlFuzzer "URLs render as thumbnails" <|
+        \urlsBefore urlToSelect urlsAfter ->
             let
-                urls : List String
-                urls =
-                    List.range 1 urlCount |> List.map (\num -> String.fromInt num ++ ".png")
+                url =
+                    urlToSelect ++ ".jpeg"
 
-                thumbnailChecks =
-                    List.map thumbnailRendered urls
+                photos =
+                    (urlsBefore ++ url :: urlsAfter) |> List.map photoFromUrl
+
+                srcToClick =
+                    urlPrefix ++ url
             in
-            { initModel | status = Loaded (List.map photoFromUrl urls) "" }
+            { initModel | status = Loaded photos "" }
                 |> view
                 |> Query.fromHtml
-                |> Expect.all thumbnailChecks
+                |> Query.find
+                    [ tag "img"
+                    , attribute
+                        (Attr.src srcToClick)
+                    ]
+                |> Event.simulate Event.click
+                |> Event.expect (ClickedPhoto url)
 
 
 urlFuzzer : Fuzzer (List String)
