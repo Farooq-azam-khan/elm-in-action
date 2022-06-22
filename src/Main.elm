@@ -196,34 +196,11 @@ updateUrl url model =
         Just Gallery ->
             toGallery model (Gallery.init model.version)
 
-        -- Gallery.init model.version |> toGallery model
         Just Folders ->
             toFolders model (Folders.init Nothing)
 
-        -- Folders.init Nothing |> toFolders model
         Just (SelectedPhoto filename) ->
             toFolders model (Folders.init (Just filename))
 
-        -- Folders.init (Just filename)
-        -- |> toFolders model
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
-
-
-
-{-
-   urlToPage : Float -> Url -> Page
-   urlToPage version url =
-       case Parser.parse parser url of
-           Just Gallery ->
-               GalleryPage (Tuple.first (Gallery.init version))
-
-           Just Folders ->
-               FoldersPage (Tuple.first (Folders.init Nothing))
-
-           Just (SelectedPhoto filename) ->
-               FoldersPage (Tuple.first (Folders.init (Just filename)))
-
-           Nothing ->
-               NotFound
--}
