@@ -64,7 +64,10 @@
           } else if (Elm.PhotoFolders) {
                  console.log('runnig photo folders')
                  const app = Elm.PhotoFolders.init({node: document.getElementById('app')})
-               }
+               } else if (Elm.Main) {
+
+                      const app = Elm.Main.init({node: document.getElementById('app')})
+                    }
     </script>
   </body>
 </html>
