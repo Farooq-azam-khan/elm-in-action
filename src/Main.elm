@@ -1,9 +1,25 @@
 module Main exposing (main)
 
 import Browser exposing (Document)
+import Browser.Navigation as Nav
 import Html exposing (Html, a, footer, h1, li, nav, text, ul)
 import Html.Attributes exposing (classList, href)
 import Html.Lazy exposing (lazy)
+import Url exposing (Url)
+import Url.Parser as Parser exposing ((</>), Parser, s, string)
+
+
+parser : Parser (Page -> a) a
+parser =
+    Parser.oneOf
+        [ Parser.map Folders Parser.top
+        , Parser.map Gallery (s "gallery")
+        , Parser.map SelectedPhoto (s "photos" </> Parser.string)
+        ]
+
+
+
+-- Parser.map SelectedPhoto (s "photos" </> Parser.string)
 
 
 type alias Model =
@@ -14,6 +30,7 @@ type Page
     = Gallery
     | Folders
     | NotFound
+    | SelectedPhoto String
 
 
 view : Model -> Document Msg
@@ -66,11 +83,26 @@ subscriptoins model =
     Sub.none
 
 
+init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
+    case url.path of
+        "/gallery" ->
+            ( { page = Gallery }, Cmd.none )
+
+        "/" ->
+            ( { page = Folders }, Cmd.none )
+
+        _ ->
+            ( { page = NotFound }, Cmd.none )
+
+
 main : Program () Model Msg
 main =
-    Browser.document
-        { init = \_ -> ( { page = Folders }, Cmd.none )
+    Browser.application
+        { init = init
         , subscriptions = subscriptoins
         , update = update
         , view = view
+        , onUrlChange = \_ -> Debug.todo "handle URL Change"
+        , onUrlRequest = \_ -> Debug.todo "handle URL request"
         }
