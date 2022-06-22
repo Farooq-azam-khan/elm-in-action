@@ -66,7 +66,10 @@
                  const app = Elm.PhotoFolders.init({node: document.getElementById('app')})
                } else if (Elm.Main) {
 
-                      const app = Elm.Main.init({node: document.getElementById('app')})
+                      const app = Elm.Main.init({
+                             node: document.getElementById('app'),
+                             flags: Pasta.version
+                      })
                     }
     </script>
   </body>

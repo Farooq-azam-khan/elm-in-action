@@ -8,7 +8,7 @@ import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode exposing (Decoder, int, list, string)
 import Json.Decode.Pipeline exposing (required)
-import PhotoGroove exposing (Msg(..))
+import PhotoGallery exposing (Msg(..))
 
 
 type alias Model =
@@ -72,7 +72,7 @@ toggleExpanded path (Folder folder) =
 main : Program () Model Msg
 main =
     Browser.element
-        { init = init
+        { init = \_ -> init Nothing
         , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
@@ -152,9 +152,9 @@ initialModel =
     }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( initialModel
+init : Maybe String -> ( Model, Cmd Msg )
+init selectedFilename =
+    ( { initialModel | selectedPhotoUrl = selectedFilename }
     , Http.get
         { url = "http://elm-in-action.com/folders/list"
         , expect = Http.expectJson GotInitialModel modelDecoder
