@@ -1,11 +1,11 @@
-module PhotoGrooveTests exposing (..)
+module PhotoGalleryTests exposing (..)
 
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Html.Attributes as Attr exposing (src)
 import Json.Decode as Decode exposing (decodeValue)
 import Json.Encode as Encode
-import PhotoGroove exposing (Model, Msg(..), Photo, Status(..), initModel, main, update, urlPrefix, view)
+import PhotoGallery exposing (Model, Msg(..), Photo, Status(..), initModel, main, update, urlPrefix, view)
 import Test exposing (..)
 import Test.Html.Event as Event
 import Test.Html.Query as Query
@@ -18,7 +18,7 @@ decoderTest =
         \url size ->
             [ ( "url", Encode.string url ), ( "size", Encode.int size ) ]
                 |> Encode.object
-                |> decodeValue PhotoGroove.photoDecoder
+                |> decodeValue PhotoGallery.photoDecoder
                 |> Result.map .title
                 |> Expect.equal (Ok "(untitle)")
 
@@ -61,7 +61,7 @@ noPhotosNoThumbnails =
     test "No thumbnails render when there are no photos to render." <|
         \_ ->
             initModel
-                |> PhotoGroove.view
+                |> PhotoGallery.view
                 |> Query.fromHtml
                 |> Query.findAll [ tag "img" ]
                 |> Query.count (Expect.equal 0)
